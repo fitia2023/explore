@@ -1,10 +1,10 @@
 "use client";
- 
+
 import React, { useState } from 'react';
 import { Send, Mail, Phone, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { sendContact } from '@/services/contact.service';
- 
+
 const ContactPage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: '',
@@ -15,16 +15,16 @@ const ContactPage: React.FC = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
- 
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
- 
+
   // const handleSubmit = (e: React.FormEvent) => {
   //   e.preventDefault();
   //   setIsSubmitting(true);
- 
+
   //   //SIMULER api call
   //   setTimeout(() => {
   //     setIsSubmitting(false);
@@ -36,18 +36,18 @@ const ContactPage: React.FC = () => {
   //       subject: '',
   //       message: ''
   //     });
- 
+
   //     //reset success message after 5 seconds
   //     setTimeout(() => {
   //       setIsSubmitted(false);
   //     }, 5000);
   //   }, 1500);
   // };
- 
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
- 
+
     try {
       await sendContact({
         nom: formData.name,
@@ -56,7 +56,7 @@ const ContactPage: React.FC = () => {
         message: formData.message,
         date_envoie: new Date().toISOString(),
       });
- 
+
       setIsSubmitted(true);
       setFormData({
         name: '',
@@ -65,7 +65,7 @@ const ContactPage: React.FC = () => {
         subject: '',
         message: '',
       });
- 
+
       setTimeout(() => {
         setIsSubmitted(false);
       }, 5000);
@@ -76,8 +76,8 @@ const ContactPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
- 
- 
+
+
   return (
     <div className="pt-24 pb-16">
       <div className="container mx-auto px-4">
@@ -94,7 +94,7 @@ const ContactPage: React.FC = () => {
             Une question, une suggestion ou envie de collaborer ? Nous sommes à votre écoute !
           </p>
         </motion.div>
- 
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {/* Contact Information */}
           <motion.div
@@ -105,7 +105,7 @@ const ContactPage: React.FC = () => {
           >
             <div className="bg-primary-600 text-white rounded-xl p-8 h-full">
               <h2 className="text-2xl font-bold mb-6">Informations de Contact</h2>
- 
+
               <div className="space-y-6">
                 <div className="flex items-start">
                   <Mail className="mr-4 mt-1" />
@@ -116,7 +116,7 @@ const ContactPage: React.FC = () => {
                     </a>
                   </div>
                 </div>
- 
+
                 <div className="flex items-start">
                   <Phone className="mr-4 mt-1" />
                   <div>
@@ -126,7 +126,7 @@ const ContactPage: React.FC = () => {
                     </a>
                   </div>
                 </div>
- 
+
                 <div className="flex items-start">
                   <MapPin className="mr-4 mt-1" />
                   <div>
@@ -138,11 +138,11 @@ const ContactPage: React.FC = () => {
                   </div>
                 </div>
               </div>
- 
- 
+
+
             </div>
           </motion.div>
- 
+
           {/* Contact Form */}
           <motion.div
             className="lg:col-span-2"
@@ -152,7 +152,7 @@ const ContactPage: React.FC = () => {
           >
             <div className="bg-white rounded-xl shadow-md p-8">
               <h2 className="text-2xl font-bold text-secondary-600 mb-6">Envoyez-nous un message</h2>
- 
+
               {isSubmitted && (
                 <motion.div
                   className="bg-primary-50 border-l-4 border-primary-600 p-4 mb-6"
@@ -162,7 +162,7 @@ const ContactPage: React.FC = () => {
                   <p className="text-primary-700 font-medium">Votre message a bien été envoyé ! Nous vous répondrons dans les plus brefs délais.</p>
                 </motion.div>
               )}
- 
+
               <form onSubmit={handleSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                   <div>
@@ -178,7 +178,7 @@ const ContactPage: React.FC = () => {
                       placeholder="Votre nom"
                     />
                   </div>
- 
+
                   <div>
                     <label htmlFor="prenom" className="block text-sm font-medium text-gray-700 mb-1">Prénoms</label>
                     <input
@@ -192,7 +192,7 @@ const ContactPage: React.FC = () => {
                       placeholder="Votre prénom"
                     />
                   </div>
- 
+
                   <div>
                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                     <input
@@ -203,11 +203,11 @@ const ContactPage: React.FC = () => {
                       onChange={handleChange}
                       required
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
-                      placeholder="Votre email"
+                      placeholder="Votre e-mail"
                     />
                   </div>
                 </div>
- 
+
                 <div className="mb-6">
                   <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">Message</label>
                   <textarea
@@ -221,7 +221,7 @@ const ContactPage: React.FC = () => {
                     placeholder="Votre message"
                   ></textarea>
                 </div>
- 
+
                 <button
                   type="submit"
                   disabled={isSubmitting}
@@ -239,4 +239,3 @@ const ContactPage: React.FC = () => {
   );
 };
 export default ContactPage;
- 
