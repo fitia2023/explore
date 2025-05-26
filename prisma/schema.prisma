@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Utilisateur {
+  id_utilisateur    Int      @id @default(autoincrement())
+  nom               String
+  prenom            String
+  mail              String   @unique
+  mot_de_passe      String
+  date_de_naissance DateTime
+  tel               String
+
+  commentaires Commentaire[]
+  destinations fait_par[]
+  coche_items  cocher[]
+}
+
+model Destination {
+  id_destination     Int     @id @default(autoincrement())
+  nom                String
+  pays               String
+  region             String?
+  description        String
+  avis_global        Float   @default(0)
+  eco_rating         Int     @default(1)
+  climat             String?
+  meilleure_periode  String? // JSON string des mois
+  tags               String? // JSON string des tags
+  image1             String
+  image2             String?
+  image3             String?
+
+  commentaires    Commentaire[]
+  activites       Activite[]
+  utilisateurs    fait_par[]
+  checklist_items contient[]
+  formalites      requiert[]
+  eco_suggestions EcoSuggestion[]
+}
+
+model Commentaire {
+  id_commentaire    Int      @id @default(autoincrement())
+  note              Int
+  contenu           String
+  date_commentaire  DateTime
+  image_commentaire String?
+
+  utilisateur   Utilisateur @relation(fields: [utilisateurId], references: [id_utilisateur])
+  destination   Destination @relation(fields: [destinationId], references: [id_destination])
+  utilisateurId Int
+  destinationId Int
+}
+
+model Activite {
+  id_activite          Int     @id @default(autoincrement())
+  nom_activite         String
+  description_activite String
+  image_activite       String?
+
+  destination   Destination @relation(fields: [destinationId], references: [id_destination])
+  destinationId Int
+}
+
+model Contact {
+  id_contact  Int      @id @default(autoincrement())
+  nom         String
+  prenom      String
+  mail        String
+  message     String
+  date_envoie DateTime
+}
+
+model CheckListe_Item {
+  id_checkliste_item Int     @id @default(autoincrement())
+  nom_item           String
+  description        String?
+  categorie          String
+  requis             Boolean @default(false)
+  eco_friendly       Boolean @default(false)
+
+  destinations       contient[]
+  coche_utilisateurs cocher[]
+}
+
+model EcoSuggestion {
+  id_eco_suggestion Int    @id @default(autoincrement())
+  titre             String
+  description       String
+  impact            String // high, medium, low
+  categorie         String // transportation, accommodation, food, activities
+
+  destination   Destination @relation(fields: [destinationId], references: [id_destination])
+  destinationId Int
+}
+
+model Formalite_administrative_Item {
+  id_formalite_administrative_item Int    @id @default(autoincrement())
+  descripition_formalite           String
+
+  destinations requiert[]
+}
+
+model fait_par {
+  utilisateurId Int
+  destinationId Int
+
+  utilisateur Utilisateur @relation(fields: [utilisateurId], references: [id_utilisateur])
+  destination Destination @relation(fields: [destinationId], references: [id_destination])
+
+  @@id([utilisateurId, destinationId])
+}
+
+model contient {
+  destinationId   Int
+  checklistItemId Int
+
+  destination    Destination     @relation(fields: [destinationId], references: [id_destination])
+  checklist_item CheckListe_Item @relation(fields: [checklistItemId], references: [id_checkliste_item])
+
+  @@id([destinationId, checklistItemId])
+}
+
+model requiert {
+  destinationId   Int
+  formaliteItemId Int
+
+  destination Destination                   @relation(fields: [destinationId], references: [id_destination])
+  formalite   Formalite_administrative_Item @relation(fields: [formaliteItemId], references: [id_formalite_administrative_item])
+
+  @@id([destinationId, formaliteItemId])
+}
+
+model cocher {
+  utilisateurId   Int
+  checklistItemId Int
+  date_cocher     DateTime
+
+  utilisateur    Utilisateur     @relation(fields: [utilisateurId], references: [id_utilisateur])
+  checklist_item CheckListe_Item @relation(fields: [checklistItemId], references: [id_checkliste_item])
+
+  @@id([utilisateurId, checklistItemId])
+}
