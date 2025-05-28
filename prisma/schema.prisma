@@ -15,6 +15,7 @@ model Utilisateur {
   mot_de_passe      String
   date_de_naissance DateTime
   tel               String
+  token             String?
 
   commentaires Commentaire[]
   destinations fait_par[]
@@ -22,19 +23,19 @@ model Utilisateur {
 }
 
 model Destination {
-  id_destination     Int     @id @default(autoincrement())
-  nom                String
-  pays               String
-  region             String?
-  description        String
-  avis_global        Float   @default(0)
-  eco_rating         Int     @default(1)
-  climat             String?
-  meilleure_periode  String? // JSON string des mois
-  tags               String? // JSON string des tags
-  image1             String
-  image2             String?
-  image3             String?
+  id_destination    Int     @id @default(autoincrement())
+  nom               String
+  pays              String
+  region            String?
+  description       String
+  avis_global       Float   @default(0)
+  eco_rating        Int     @default(1)
+  climat            String?
+  meilleure_periode String? // JSON string des mois
+  tags              String? // JSON string des tags
+  image1            String
+  image2            String?
+  image3            String?
 
   commentaires    Commentaire[]
   activites       Activite[]
