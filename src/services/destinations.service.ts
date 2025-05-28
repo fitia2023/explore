@@ -1,4 +1,4 @@
-const url = "api/destinations";
+const url = "/api/destinations";
 
 export default class DestinationsService {
   static async getDestinations() {
