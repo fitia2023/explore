@@ -21,29 +21,6 @@ const ContactPage: React.FC = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setIsSubmitting(true);
-
-  //   //SIMULER api call
-  //   setTimeout(() => {
-  //     setIsSubmitting(false);
-  //     setIsSubmitted(true);
-  //     setFormData({
-  //       name: '',
-  //       prenom: '',
-  //       email: '',
-  //       subject: '',
-  //       message: ''
-  //     });
-
-  //     //reset success message after 5 seconds
-  //     setTimeout(() => {
-  //       setIsSubmitted(false);
-  //     }, 5000);
-  //   }, 1500);
-  // };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -121,8 +98,8 @@ const ContactPage: React.FC = () => {
                   <Phone className="mr-4 mt-1" />
                   <div>
                     <h3 className="font-semibold mb-1">Téléphone</h3>
-                    <a href="tel:+33123456789" className="text-white/80 hover:text-white transition-colors">
-                      +33 7 58 81 72 92
+                    <a className="text-white/80 hover:text-white transition-colors">
+                      +33 4 67 XX XX XX
                     </a>
                   </div>
                 </div>
@@ -132,7 +109,6 @@ const ContactPage: React.FC = () => {
                   <div>
                     <h3 className="font-semibold mb-1">Adresse</h3>
                     <address className="text-white/80 not-italic">
-                      7 rue des poiriers<br />
                       34090 Montpellier, France
                     </address>
                   </div>

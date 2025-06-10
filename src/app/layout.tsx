@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/Layout/Header";
 import Footer from "@/Layout/Footer";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
   title: "Explore Durable",
@@ -19,11 +20,13 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body>
-        <div className="flex flex-col min-h-screen">
-          <Header />
-          {children}
-          <Footer />
-        </div>
+        <AuthProvider>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            {children}
+            <Footer />
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );
