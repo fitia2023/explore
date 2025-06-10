@@ -6,19 +6,25 @@ CREATE TABLE "Utilisateur" (
     "mail" TEXT NOT NULL,
     "mot_de_passe" TEXT NOT NULL,
     "date_de_naissance" DATETIME NOT NULL,
-    "tel" TEXT NOT NULL
+    "tel" TEXT NOT NULL,
+    "token" TEXT
 );
 
 -- CreateTable
 CREATE TABLE "Destination" (
     "id_destination" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "nom" TEXT NOT NULL,
     "pays" TEXT NOT NULL,
-    "region" TEXT NOT NULL,
+    "region" TEXT,
     "description" TEXT NOT NULL,
-    "avis_global" REAL NOT NULL,
+    "avis_global" REAL NOT NULL DEFAULT 0,
+    "eco_rating" INTEGER NOT NULL DEFAULT 1,
+    "climat" TEXT,
+    "meilleure_periode" TEXT,
+    "tags" TEXT,
     "image1" TEXT NOT NULL,
-    "image2" TEXT NOT NULL,
-    "image3" TEXT NOT NULL
+    "image2" TEXT,
+    "image3" TEXT
 );
 
 -- CreateTable
@@ -57,7 +63,22 @@ CREATE TABLE "Contact" (
 -- CreateTable
 CREATE TABLE "CheckListe_Item" (
     "id_checkliste_item" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "nom_item" TEXT NOT NULL
+    "nom_item" TEXT NOT NULL,
+    "description" TEXT,
+    "categorie" TEXT NOT NULL,
+    "requis" BOOLEAN NOT NULL DEFAULT false,
+    "eco_friendly" BOOLEAN NOT NULL DEFAULT false
+);
+
+-- CreateTable
+CREATE TABLE "EcoSuggestion" (
+    "id_eco_suggestion" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "titre" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "impact" TEXT NOT NULL,
+    "categorie" TEXT NOT NULL,
+    "destinationId" INTEGER NOT NULL,
+    CONSTRAINT "EcoSuggestion_destinationId_fkey" FOREIGN KEY ("destinationId") REFERENCES "Destination" ("id_destination") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
 -- CreateTable
