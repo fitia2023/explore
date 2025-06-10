@@ -50,7 +50,7 @@ export default function FeaturedDestinations() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {featuredDestinations.map((destination, index) => (
             <motion.div
-              key={destination.id}
+              key={destination.id_destination}
               className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -59,10 +59,10 @@ export default function FeaturedDestinations() {
             >
               <div className="relative h-60 overflow-hidden">
                 <img
-                    src={destination.image1}
-                    alt={destination.nom}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
-                  />
+                  src={destination.image1}
+                  alt={destination.nom}
+                  className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
+                />
               </div>
               <div className="p-6">
                 <h3 className="text-xl font-bold text-secondary-700 mb-2">
@@ -73,9 +73,8 @@ export default function FeaturedDestinations() {
                 </p>
 
                 <Link
-                  href={`/destinations/${destination.id}`}
+                  href={`/destinations/${destination.id_destination}`}
                   className="inline-block px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-full transition-colors duration-300 text-sm"
-                  onClick={() => setSelectedDestination(destination)}
                 >
                   Explorer
                 </Link>

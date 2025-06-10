@@ -4,9 +4,9 @@ import { NextResponse } from "next/server";
 // GET /api/destination/[id]
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = Number(params.id);
+  const id = Number((await params).id);
 
   const destination = await prisma.destination.findUnique({
     where: { id_destination: id },
@@ -39,7 +39,7 @@ export async function GET(
 // PUT /api/destination/[id]
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const id = Number((await params).id);
   const body = await request.json();
@@ -98,7 +98,7 @@ export async function PUT(
 // DELETE /api/destination/[id]
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const id = Number((await params).id);
   await prisma.destination.delete({

@@ -366,49 +366,74 @@ const destinationItemsMapping = {
 async function main() {
   console.log("🌱 Début du seed...");
 
-  // Nettoyer la base de données
-  await prisma.contient.deleteMany();
+  // Nettoyage : respecter l'ordre des dépendances
+  await prisma.cocher.deleteMany();
+  await prisma.commentaire.deleteMany();
   await prisma.ecoSuggestion.deleteMany();
+  await prisma.contient.deleteMany();
   await prisma.checkListe_Item.deleteMany();
   await prisma.destination.deleteMany();
+  await prisma.utilisateur.deleteMany();
 
   console.log("🧹 Base de données nettoyée");
 
+  // Créer un utilisateur
+  const utilisateur = await prisma.utilisateur.create({
+    data: {
+      nom: "Dupont",
+      prenom: "Jean",
+      mail: "jean.dupont@example.com",
+      mot_de_passe: "hashedpassword123",
+      date_de_naissance: new Date("1990-01-01"),
+      tel: "0612345678",
+    },
+  });
+  console.log(`✅ Utilisateur ${utilisateur.nom} créé`);
+
   // Insérer les destinations
   const destinations = [];
-  for (const [index, dest] of seedData.destinations.entries()) {
-    const destination = await prisma.destination.create({
-      data: dest,
-    });
+  for (const dest of seedData.destinations) {
+    const destination = await prisma.destination.create({ data: dest });
     destinations.push(destination);
     console.log(`✅ Destination ${dest.nom} créée`);
   }
 
   // Insérer les items de checklist
   const checklistItems = [];
-  for (const [index, item] of seedData.checklist_items.entries()) {
-    const checklistItem = await prisma.checkListe_Item.create({
-      data: item,
-    });
+  for (const item of seedData.checklist_items) {
+    const checklistItem = await prisma.checkListe_Item.create({ data: item });
     checklistItems.push(checklistItem);
   }
   console.log(`✅ ${checklistItems.length} items de checklist créés`);
 
-  // Créer les relations contient
-  for (const [destIndex, itemIds] of Object.entries(destinationItemsMapping)) {
-    const destinationId = parseInt(destIndex);
-    for (const itemId of itemIds) {
+  // Relations destination-checklist
+  for (const [destIndexStr, itemIndices] of Object.entries(
+    destinationItemsMapping
+  )) {
+    const destIndex = parseInt(destIndexStr) - 1;
+    const destination = destinations[destIndex];
+
+    for (const itemIndex of itemIndices) {
+      const item = checklistItems[itemIndex - 1];
+
+      if (!destination || !item) {
+        console.warn(
+          `⚠️ Donnée manquante pour destination ${destIndexStr}, item ${itemIndex}`
+        );
+        continue;
+      }
+
       await prisma.contient.create({
         data: {
-          destinationId: destinationId,
-          checklistItemId: itemId,
+          destinationId: destination.id_destination,
+          checklistItemId: item.id_checkliste_item,
         },
       });
     }
   }
   console.log("✅ Relations destination-checklist créées");
 
-  // Insérer les suggestions écologiques pour chaque destination
+  // Suggestions écologiques
   for (const destination of destinations) {
     for (const suggestion of seedData.eco_suggestions) {
       await prisma.ecoSuggestion.create({
@@ -420,6 +445,32 @@ async function main() {
     }
   }
   console.log("✅ Suggestions écologiques créées");
+
+  // Marquer un item comme coché
+  await prisma.cocher.create({
+    data: {
+      utilisateurId: utilisateur.id_utilisateur,
+      checklistItemId: checklistItems[0].id_checkliste_item,
+      date_cocher: new Date(),
+    },
+  });
+  console.log(`✅ Item coché par ${utilisateur.nom}`);
+
+  // Ajouter un commentaire
+  const costaRica = destinations.find((d) => d.nom === "Costa Rica");
+  if (costaRica) {
+    await prisma.commentaire.create({
+      data: {
+        note: 5,
+        contenu: "Expérience incroyable, paysages magnifiques !",
+        date_commentaire: new Date(),
+        image_commentaire: "https://example.com/comment-image.jpg",
+        utilisateurId: utilisateur.id_utilisateur,
+        destinationId: costaRica.id_destination,
+      },
+    });
+    console.log("✅ Commentaire créé pour Costa Rica");
+  }
 
   console.log("🎉 Seed terminé avec succès!");
 }

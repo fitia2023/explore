@@ -1,5 +1,5 @@
 export type Destination = {
-  id: number;
+  id_destination: number;
   nom: string;
   pays: string;
   description: string;

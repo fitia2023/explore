@@ -3,8 +3,8 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-
-export default function DestinationGrid({ destinations }) {
+import { Destination } from "@/types/Destinations";  
+export default function DestinationGrid({ destinations }: { destinations: Destination[] }) {
   return (
     <div>
       {destinations.length > 0 ? (
@@ -12,7 +12,10 @@ export default function DestinationGrid({ destinations }) {
           {destinations.map((destination, index) => {
             const bestTimeToVisit: string[] = (() => {
               try {
-                return JSON.parse(destination.meilleure_periode || "[]");
+                if (typeof destination.meilleure_periode === "string") {
+                  return JSON.parse(destination.meilleure_periode || "[]");
+                }
+                return Array.isArray(destination.meilleure_periode) ? destination.meilleure_periode : [];
               } catch {
                 return [];
               }
@@ -20,7 +23,10 @@ export default function DestinationGrid({ destinations }) {
 
             const tags: string[] = (() => {
               try {
-                return JSON.parse(destination.tags || "[]");
+                if (typeof destination.tags === "string") {
+                  return JSON.parse(destination.tags || "[]");
+                }
+                return Array.isArray(destination.tags) ? destination.tags : [];
               } catch {
                 return [];
               }
@@ -37,7 +43,7 @@ export default function DestinationGrid({ destinations }) {
                 <div className="relative h-60 overflow-hidden">
                   <img
                     src={destination.image1}
-                    alt={destination.nom}
+                    alt={destination.nom}  
                     className="w-full h-full object-cover transition-transform duration-700 hover:scale-110"
                   />
                 </div>
@@ -85,8 +91,7 @@ export default function DestinationGrid({ destinations }) {
 
                   <Link
                     href={`/destinations/${destination.id_destination}`}
-                    className="inline-block px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-full transition-colors duration-300 text-sm"
-                    onClick={() => onSelectDestination?.(destination)}
+                    className="inline-block px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-full transition-colors duration-300 text-sm" 
                   >
                     Explorer
                   </Link>
