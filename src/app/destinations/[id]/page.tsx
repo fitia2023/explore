@@ -2,7 +2,7 @@
 import DestinationsService from "@/services/destinations.service";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Cloud, CheckCircle } from "lucide-react";
+import { ArrowLeft, CalendarDays, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import Checklist_item from "@/components/destinations/checklist/Checklist_item";
 import { Destination } from "@/types/Destinations";
@@ -10,6 +10,7 @@ import { EcoSuggestion } from "@/types/EcoSuggestion";
 import { ChecklistItem } from "@/types/CheckListe_Item";
 import { useParams } from "next/navigation";
 import Commentaire from "@/components/destinations/Commentaire";
+import WeatherClimate from "@/components/destinations/WeatherClimate";
 
 export default function Page() {
   const params = useParams();
@@ -141,7 +142,7 @@ export default function Page() {
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  {/* <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex items-center mb-2">
                       <Cloud size={20} className="text-primary-600 mr-2" />
                       <h3 className="font-semibold text-secondary-700">
@@ -151,7 +152,8 @@ export default function Page() {
                     <p className="text-gray-600 capitalize">
                       {destination.climate}
                     </p>
-                  </div>
+                  </div> */}
+                  <WeatherClimate destination={destination} />
 
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex items-center mb-2">
