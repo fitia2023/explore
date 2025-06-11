@@ -5,10 +5,11 @@ import DestinationSearch from "@/components/destinations/DestinationSearch";
 import DestinationGrid from "@/components/destinations/DestinationGrid";
 import DestinationsService from "@/services/destinations.service";
 import { motion } from "framer-motion"; 
+import { Destination } from "@/types/Destinations";
 
 export default function Page() {
-  const [destinations, setDestinations] = useState([]);
-  const [filteredDestinations, setFilteredDestinations] = useState([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [filteredDestinations, setFilteredDestinations] = useState<Destination[]>([]);
 
   useEffect(() => {
     const fetchDestinations = async () => {

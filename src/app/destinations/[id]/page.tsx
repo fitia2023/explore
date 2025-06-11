@@ -276,7 +276,7 @@ export default function Page() {
         ) : (
           <div className="max-w-3xl mx-auto">
             {/* Content avis */}
-            <Commentaire />
+            <Commentaire destinationId={parseInt(id as string)} />
           </div>
         )}
       </div>

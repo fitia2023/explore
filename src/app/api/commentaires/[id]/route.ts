@@ -1,7 +1,11 @@
-import prisma from "@/lib/prisma.js";
+import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(_, { params }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: { id: string } }
+) {
+  const id = Number((await params).id);
   const item = await prisma.commentaire.findUnique({
     where: { id_commentaire: parseInt(params.id) }
   })
@@ -9,7 +13,10 @@ export async function GET(_, { params }) {
   return NextResponse.json(item)
 }
 
-export async function PUT(request, { params }) {
+export async function PUT(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   const body = await request.json()
   try {
     const updated = await prisma.commentaire.update({
@@ -26,15 +33,18 @@ export async function PUT(request, { params }) {
     })
     return NextResponse.json(updated)
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 400 })
+    return NextResponse.json({ error: err }, { status: 400 })
   }
 }
 
-export async function DELETE(_, { params }) {
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
   try {
     await prisma.commentaire.delete({ where: { id_commentaire: parseInt(params.id) } })
     return NextResponse.json({ message: 'Commentaire supprimé' })
   } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 400 })
+    return NextResponse.json({ error: err }, { status: 400 })
   }
 }

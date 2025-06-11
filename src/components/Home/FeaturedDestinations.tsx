@@ -3,9 +3,10 @@ import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import DestinationsService from "@/services/destinations.service";
+import { Destination } from "@/types/Destinations";
 
 export default function FeaturedDestinations() {
-  const [destinations, setDestinations] = useState([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
 
   useEffect(() => {
     const fetchDestinations = async () => {
