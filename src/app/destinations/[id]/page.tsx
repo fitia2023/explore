@@ -10,8 +10,8 @@ import { EcoSuggestion } from "@/types/EcoSuggestion";
 import { ChecklistItem } from "@/types/CheckListe_Item";
 import { useParams } from "next/navigation";
 import Commentaire from "@/components/destinations/Commentaire";
-import WeatherClimate from "@/components/destinations/WeatherClimate";
-
+import WeatherClimat from '@/components/destinations/WeatherClimate';
+ 
 export default function Page() {
   const params = useParams();
   const { id } = params;
@@ -153,7 +153,7 @@ export default function Page() {
                       {destination.climate}
                     </p>
                   </div> */}
-                  <WeatherClimate destination={destination} />
+                  <WeatherClimat city={destination.nom} />
 
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="flex items-center mb-2">

@@ -1,8 +1,8 @@
-// src/app/api/weather/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
-const OPENWEATHER_API_KEY = process.env.OPENWEATHER_API_KEY;
-const OPENWEATHER_BASE_URL = "https://api.openweathermap.org/data/2.5";
+// Plus besoin de clé API avec Open-Meteo !
+const OPENMETEO_BASE_URL = "https://api.open-meteo.com/v1";
+const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1";
 
 interface WeatherData {
   temperature: number;
@@ -13,6 +13,32 @@ interface WeatherData {
   icon: string;
   isRaining: boolean;
   recommendations: string[];
+}
+
+// Fonction pour convertir le code météo Open-Meteo en condition
+function getConditionFromWeatherCode(weatherCode: number): { condition: string; description: string; icon: string } {
+  const weatherCodes: { [key: number]: { condition: string; description: string; icon: string } } = {
+    0: { condition: "clear", description: "Ciel dégagé", icon: "01d" },
+    1: { condition: "partly-cloudy", description: "Principalement dégagé", icon: "02d" },
+    2: { condition: "partly-cloudy", description: "Partiellement nuageux", icon: "03d" },
+    3: { condition: "cloudy", description: "Couvert", icon: "04d" },
+    45: { condition: "fog", description: "Brouillard", icon: "50d" },
+    48: { condition: "fog", description: "Brouillard givrant", icon: "50d" },
+    51: { condition: "drizzle", description: "Bruine légère", icon: "09d" },
+    53: { condition: "drizzle", description: "Bruine modérée", icon: "09d" },
+    55: { condition: "drizzle", description: "Bruine dense", icon: "09d" },
+    61: { condition: "rain", description: "Pluie légère", icon: "10d" },
+    63: { condition: "rain", description: "Pluie modérée", icon: "10d" },
+    65: { condition: "rain", description: "Pluie forte", icon: "10d" },
+    71: { condition: "snow", description: "Chute de neige légère", icon: "13d" },
+    73: { condition: "snow", description: "Chute de neige modérée", icon: "13d" },
+    75: { condition: "snow", description: "Chute de neige forte", icon: "13d" },
+    95: { condition: "thunderstorm", description: "Orage", icon: "11d" },
+    96: { condition: "thunderstorm", description: "Orage avec grêle légère", icon: "11d" },
+    99: { condition: "thunderstorm", description: "Orage avec grêle forte", icon: "11d" }
+  };
+
+  return weatherCodes[weatherCode] || weatherCodes[0];
 }
 
 function getWeatherRecommendations(temp: number, condition: string, isRaining: boolean): string[] {
@@ -52,6 +78,35 @@ function getWeatherRecommendations(temp: number, condition: string, isRaining: b
   return recommendations;
 }
 
+// Fonction pour obtenir les coordonnées d'une ville
+async function getCoordinates(city: string) {
+  try {
+    const geocodingResponse = await fetch(
+      `${GEOCODING_URL}/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`
+    );
+
+    if (!geocodingResponse.ok) {
+      throw new Error(`Geocoding API error: ${geocodingResponse.status}`);
+    }
+
+    const geocodingData = await geocodingResponse.json();
+    
+    if (!geocodingData.results || geocodingData.results.length === 0) {
+      throw new Error(`Ville "${city}" non trouvée`);
+    }
+
+    const location = geocodingData.results[0];
+    return {
+      latitude: location.latitude,
+      longitude: location.longitude,
+      name: location.name,
+      country: location.country
+    };
+  } catch (error) {
+    throw new Error(`Erreur lors de la géolocalisation: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const city = searchParams.get("city");
@@ -63,17 +118,13 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if (!OPENWEATHER_API_KEY) {
-    return NextResponse.json(
-      { error: "Weather API key not configured" },
-      { status: 500 }
-    );
-  }
-
   try {
-    // Appel à l'API OpenWeatherMap
+    // 1. Obtenir les coordonnées de la ville
+    const coordinates = await getCoordinates(city);
+
+    // 2. Appel à l'API Open-Meteo pour les données météorologiques
     const weatherResponse = await fetch(
-      `${OPENWEATHER_BASE_URL}/weather?q=${encodeURIComponent(city)}&appid=${OPENWEATHER_API_KEY}&units=metric&lang=fr`,
+      `${OPENMETEO_BASE_URL}/forecast?latitude=${coordinates.latitude}&longitude=${coordinates.longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&timezone=auto`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -84,21 +135,28 @@ export async function GET(request: NextRequest) {
     );
 
     if (!weatherResponse.ok) {
-      throw new Error(`OpenWeather API error: ${weatherResponse.status}`);
+      throw new Error(`Open-Meteo API error: ${weatherResponse.status}`);
     }
 
     const weatherData = await weatherResponse.json();
     
     // Extraction et formatage des données
-    const temperature = Math.round(weatherData.main.temp);
-    const condition = weatherData.weather[0].main.toLowerCase();
-    const description = weatherData.weather[0].description;
-    const humidity = weatherData.main.humidity;
-    const windSpeed = weatherData.wind.speed;
-    const icon = weatherData.weather[0].icon;
+    const current = weatherData.current;
+    const temperature = Math.round(current.temperature_2m);
+    const humidity = current.relative_humidity_2m;
+    const windSpeed = current.wind_speed_10m;
+    const weatherCode = current.weather_code;
     
-    // Détection de la pluie
-    const isRaining = condition.includes('rain') || condition.includes('drizzle') || condition.includes('thunderstorm');
+    // Conversion du code météo
+    const weatherInfo = getConditionFromWeatherCode(weatherCode);
+    const condition = weatherInfo.condition;
+    const description = weatherInfo.description;
+    const icon = weatherInfo.icon;
+    
+    // Détection de la pluie/précipitations
+    const isRaining = condition.includes('rain') || 
+                     condition.includes('drizzle') || 
+                     condition.includes('thunderstorm');
     
     // Génération des recommandations
     const recommendations = getWeatherRecommendations(temperature, condition, isRaining);
@@ -114,7 +172,13 @@ export async function GET(request: NextRequest) {
       recommendations
     };
 
-    return NextResponse.json(formattedWeatherData, { status: 200 });
+    return NextResponse.json({
+      ...formattedWeatherData,
+      location: {
+        name: coordinates.name,
+        country: coordinates.country
+      }
+    }, { status: 200 });
 
   } catch (error) {
     console.error("Weather API error:", error);

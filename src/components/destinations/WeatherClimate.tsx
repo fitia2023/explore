@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
-import { Cloud, Thermometer, Droplets, Wind, MapPin, RefreshCw, AlertCircle } from 'lucide-react';
+import { Cloud, Thermometer, Droplets, Wind, MapPin, Loader } from 'lucide-react';
 
 interface WeatherData {
   temperature: number;
@@ -10,214 +12,172 @@ interface WeatherData {
   icon: string;
   isRaining: boolean;
   recommendations: string[];
+  location?: {
+    name: string;
+    country: string;
+  };
 }
 
-interface Destination {
-  nom: string;
-  climate: string;
-  pays: string;
+interface WeatherClimatProps {
+  city: string;
+  className?: string;
 }
 
-interface WeatherClimateProps {
-  destination: Destination;
-}
+const WeatherClimat: React.FC<WeatherClimatProps> = ({ city, className = "" }) => {
+  const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-export default function WeatherClimate({ destination }: WeatherClimateProps) {
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  useEffect(() => {
+    if (city) {
+      fetchWeatherData();
+    }
+  }, [city]);
 
-  const fetchWeather = async () => {
-    setLoading(true);
-    setError(false);
+  const fetchWeatherData = async () => {
+    if (!city) return;
     
+    setLoading(true);
+    setError(null);
+
     try {
-      // Simuler l'appel API avec données fictives pour la démo
-      // Dans votre projet, remplacez par: const response = await fetch(`/api/weather?city=${destination.nom}`);
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simuler délai réseau
+      const response = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
       
-      // Données météo simulées basées sur le climat de la destination
-      const mockWeatherData: WeatherData = {
-        temperature: destination.climate === 'tropical' ? 28 : 
-                    destination.climate === 'subarctic' ? -2 : 15,
-        condition: destination.climate === 'tropical' ? 'sunny' : 
-                  destination.climate === 'subarctic' ? 'snow' : 'cloudy',
-        humidity: destination.climate === 'tropical' ? 80 : 65,
-        windSpeed: 12,
-        description: destination.climate === 'tropical' ? 'Ensoleillé et chaud' : 
-                    destination.climate === 'subarctic' ? 'Neige légère' : 'Nuageux',
-        icon: '01d',
-        isRaining: Math.random() > 0.7,
-        recommendations: destination.climate === 'tropical' ? 
-          ['🧴 Crème solaire indispensable', '💧 Beaucoup d\'eau', '👕 Vêtements légers'] :
-          destination.climate === 'subarctic' ? 
-          ['🧥 Manteau chaud indispensable', '🧤 Gants et bonnet', '👢 Chaussures chaudes'] :
-          ['🧥 Veste recommandée', '☂️ Parapluie au cas où']
-      };
-      
-      setWeather(mockWeatherData);
-      setLastUpdate(new Date());
-      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Erreur lors de la récupération des données météo');
+      }
+
+      const data = await response.json();
+      setWeatherData(data);
     } catch (err) {
-      console.error('Weather fetch error:', err);
-      setError(true);
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      console.error('Erreur météo:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchWeather();
-  }, [destination.nom]);
-
   const getWeatherIcon = (condition: string) => {
-    switch (condition.toLowerCase()) {
-      case 'sunny':
+    switch (condition) {
       case 'clear':
         return '☀️';
+      case 'partly-cloudy':
+        return '⛅';
       case 'cloudy':
-      case 'overcast':
         return '☁️';
       case 'rain':
-      case 'drizzle':
         return '🌧️';
+      case 'drizzle':
+        return '🌦️';
       case 'snow':
         return '❄️';
       case 'thunderstorm':
         return '⛈️';
+      case 'fog':
+        return '🌫️';
       default:
         return '🌤️';
     }
   };
 
-  const formatLastUpdate = (date: Date) => {
-    const now = new Date();
-    const diffMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-    
-    if (diffMinutes < 1) return 'À l\'instant';
-    if (diffMinutes < 60) return `Il y a ${diffMinutes} min`;
-    
-    const diffHours = Math.floor(diffMinutes / 60);
-    return `Il y a ${diffHours}h`;
-  };
-
-  // État de chargement
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
-        <div className="flex items-center mb-3">
-          <RefreshCw size={20} className="text-blue-600 mr-2 animate-spin" />
-          <h3 className="font-semibold text-blue-800">Chargement météo...</h3>
-        </div>
-        <div className="space-y-2">
-          <div className="h-3 bg-blue-200 rounded-full w-3/4 animate-pulse"></div>
-          <div className="h-3 bg-blue-200 rounded-full w-1/2 animate-pulse"></div>
+      <div className={`bg-white rounded-xl shadow-md p-6 ${className}`}>
+        <div className="flex items-center justify-center">
+          <Loader className="animate-spin h-8 w-8 text-primary-600 mr-2" />
+          <span className="text-gray-600">Chargement des données météo...</span>
         </div>
       </div>
     );
   }
 
-  // État d'erreur - Fallback vers climat statique
-  if (error || !weather) {
+  if (error) {
     return (
-      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center">
-            <Cloud size={20} className="text-gray-600 mr-2" />
-            <h3 className="font-semibold text-gray-700">Climat</h3>
-          </div>
-          <button
-            onClick={fetchWeather}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-            title="Réessayer"
+      <div className={`bg-white rounded-xl shadow-md p-6 ${className}`}>
+        <div className="text-center">
+          <Cloud className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+          <p className="text-red-600 mb-2">Erreur météo</p>
+          <p className="text-gray-600 text-sm">{error}</p>
+          <button 
+            onClick={fetchWeatherData}
+            className="mt-3 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            <RefreshCw size={16} />
+            Réessayer
           </button>
         </div>
-        <p className="text-gray-600 capitalize mb-2">{destination.climate}</p>
-        {error && (
-          <div className="flex items-center text-sm text-amber-600">
-            <AlertCircle size={14} className="mr-1" />
-            <span>Données météo indisponibles</span>
-          </div>
-        )}
       </div>
     );
   }
 
-  // Affichage normal avec données météo
+  if (!weatherData) {
+    return (
+      <div className={`bg-white rounded-xl shadow-md p-6 ${className}`}>
+        <div className="text-center text-gray-500">
+          Aucune donnée météo disponible
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
-      {/* En-tête */}
-      <div className="flex items-center justify-between mb-3">
+    <div className={`bg-white rounded-xl shadow-md p-6 ${className}`}>
+      {/* En-tête avec localisation */}
+      <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
-          <Cloud size={20} className="text-blue-600 mr-2" />
-          <h3 className="font-semibold text-blue-800">Météo Actuelle</h3>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center text-xs text-blue-600">
-            <MapPin size={12} className="mr-1" />
-            <span>{destination.nom}</span>
-          </div>
-          <button
-            onClick={fetchWeather}
-            className="text-blue-500 hover:text-blue-700 transition-colors"
-            title="Actualiser"
-          >
-            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
-          </button>
-        </div>
-      </div>
-      
-      {/* Température principale */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center">
-          <span className="text-3xl mr-2">{getWeatherIcon(weather.condition)}</span>
+          <MapPin className="h-5 w-5 text-primary-600 mr-2" />
           <div>
-            <div className="flex items-center">
-              <Thermometer size={18} className="text-red-500 mr-1" />
-              <span className="text-2xl font-bold text-gray-800">{weather.temperature}°C</span>
-            </div>
-            <p className="text-gray-600 capitalize text-sm">{weather.description}</p>
+            <h3 className="font-semibold text-secondary-700">
+              {weatherData.location?.name || city}
+            </h3>
+            {weatherData.location?.country && (
+              <p className="text-sm text-gray-500">{weatherData.location.country}</p>
+            )}
           </div>
         </div>
-      </div>
-      
-      {/* Détails météo */}
-      <div className="flex items-center justify-between mb-3 text-sm text-gray-600">
-        <div className="flex items-center">
-          <Droplets size={14} className="text-blue-500 mr-1" />
-          <span>{weather.humidity}%</span>
-        </div>
-        <div className="flex items-center">
-          <Wind size={14} className="text-gray-500 mr-1" />
-          <span>{weather.windSpeed} km/h</span>
-        </div>
-        <div className="text-xs">
-          {lastUpdate && formatLastUpdate(lastUpdate)}
+        <div className="text-right">
+          <div className="text-3xl mb-1">{getWeatherIcon(weatherData.condition)}</div>
         </div>
       </div>
 
-      {/* Indicateur de pluie */}
-      {weather.isRaining && (
-        <div className="bg-blue-100 border border-blue-200 rounded p-2 mb-3">
-          <div className="flex items-center text-blue-700 text-sm">
-            <span className="mr-2">🌧️</span>
-            <span>Pluie en cours</span>
-          </div>
+      {/* Température principale */}
+      <div className="text-center mb-6">
+        <div className="text-4xl font-bold text-secondary-600 mb-2">
+          {weatherData.temperature}°C
         </div>
-      )}
+        <p className="text-gray-600 capitalize">{weatherData.description}</p>
+      </div>
+
+      {/* Détails météorologiques */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="text-center">
+          <Droplets className="h-5 w-5 text-blue-500 mx-auto mb-1" />
+          <p className="text-sm text-gray-600">Humidité</p>
+          <p className="font-semibold">{weatherData.humidity}%</p>
+        </div>
+        <div className="text-center">
+          <Wind className="h-5 w-5 text-gray-500 mx-auto mb-1" />
+          <p className="text-sm text-gray-600">Vent</p>
+          <p className="font-semibold">{weatherData.windSpeed} km/h</p>
+        </div>
+        <div className="text-center">
+          <Thermometer className="h-5 w-5 text-red-500 mx-auto mb-1" />
+          <p className="text-sm text-gray-600">Ressenti</p>
+          <p className="font-semibold">{weatherData.temperature}°C</p>
+        </div>
+      </div>
 
       {/* Recommandations */}
-      {weather.recommendations && weather.recommendations.length > 0 && (
-        <div className="border-t border-blue-200 pt-3">
-          <h4 className="text-sm font-medium text-blue-800 mb-2">Recommandations :</h4>
-          <div className="space-y-1">
-            {weather.recommendations.slice(0, 2).map((rec, index) => (
-              <div key={index} className="text-xs text-blue-700 flex items-center">
-                <span className="mr-1">•</span>
-                <span>{rec}</span>
+      {weatherData.recommendations.length > 0 && (
+        <div className="border-t pt-4">
+          <h4 className="font-semibold text-secondary-700 mb-3">
+            Recommandations
+          </h4>
+          <div className="space-y-2">
+            {weatherData.recommendations.slice(0, 3).map((recommendation, index) => (
+              <div key={index} className="flex items-center text-sm text-gray-600">
+                <div className="w-2 h-2 bg-primary-600 rounded-full mr-2 flex-shrink-0"></div>
+                <span>{recommendation}</span>
               </div>
             ))}
           </div>
@@ -227,5 +187,4 @@ export default function WeatherClimate({ destination }: WeatherClimateProps) {
   );
 };
 
- 
- 
+export default WeatherClimat;
