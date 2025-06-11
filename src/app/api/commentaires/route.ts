@@ -10,22 +10,16 @@ export async function GET() {
 // POST /api/commentaires
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const {  
-  contenu_commentaire,
-    date_commentaire,
-    id_activite,
-    id_utilisateur,
-    id_destinataire,
-   } = body;
+  const { contenu, note, date_commentaire, id_utilisateur, id_destinataire } =
+    body;
   try {
     const newItem = await prisma.commentaire.create({
-      data: { 
-
+      data: {
+        contenu,
+        note,
         date_commentaire: new Date(date_commentaire),
-        id_activite,
-        id_utilisateur,
-        id_destinataire,
-
+        utilisateurId: id_utilisateur,
+        destinationId: id_destinataire,
       },
     });
     return NextResponse.json(newItem, { status: 201 });
