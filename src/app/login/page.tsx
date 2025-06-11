@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
 import { Mail, Lock, User, ArrowRight, Phone, Calendar } from 'lucide-react';
+ 
 
 export default function LoginPage() {
   //détermine si en mode connexion ou inscription
@@ -26,7 +26,15 @@ export default function LoginPage() {
   // Message d'erreur à afficher en cas de problème
   const [error, setError] = useState('');
 
-  const { login, register } = useAuth();
+  const { user,isLoading, login, register } = useAuth();
+
+  useEffect(() => {
+    // Vérification de l'état de l'utilisateur au chargement
+    if (user && !isLoading) {
+      // Redirection ou action si l'utilisateur est connecté
+      window.location.href = '/account'; // Exemple de redirection vers la page de connexion
+    }
+  }, [user, isLoading]);
 
   //gère les modifications des champs du formulaire
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,11 +1,19 @@
 'use client';
 
-import React from 'react';
+import React ,{useEffect}from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { User, Mail, Phone, Calendar, LogOut, Edit } from 'lucide-react';
+ 
 
 export default function AccountPage() {
   const { user, logout, isLoading } = useAuth();
+ useEffect(() => {
+    // Vérification de l'état de l'utilisateur au chargement
+    if (!user && !isLoading) {
+      // Redirection ou action si l'utilisateur n'est pas connecté
+      window.location.href = '/login'; // Exemple de redirection vers la page de connexion
+    }
+  }, [user, isLoading]);
 
   if (isLoading) {
     return (

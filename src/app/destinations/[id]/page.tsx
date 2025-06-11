@@ -251,7 +251,7 @@ export default function Page() {
                   {destination.nom}.
                 </p>
 
-                <Checklist_item checklist={checklist} />
+                <Checklist_item checklist={checklist}/>
 
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <div className="flex items-center text-sm text-primary-600 mb-4">
@@ -259,16 +259,7 @@ export default function Page() {
                     <span>Élément en possession</span>
                   </div>
 
-                  <div className="flex justify-between">
-                    {/* <button className="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-full transition-colors duration-300 text-sm flex items-center">
-                    <ExternalLink size={16} className="mr-1" />
-                    Imprimer checklist
-                  </button> */}
-
-                    <button className="px-4 py-2 bg-white hover:bg-gray-100 text-primary-600 font-medium rounded-full transition-colors duration-300 border border-primary-200 text-sm">
-                      Sauvegarder
-                    </button>
-                  </div>
+                   
                 </div>
               </motion.div>
             </div>
